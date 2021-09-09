@@ -5,6 +5,18 @@ var containerContent = document.querySelector("#container");
 
 var dteToday = dayjs().format("MM/DD/YYYY");
 
+var aryForecastIcons = [
+    {"description":"clear sky", "icon":"http://openweathermap.org/img/wn/01d@2x.png"}
+    , {"description":"few clouds", "icon":"http://openweathermap.org/img/wn/02d@2x.png"}
+    , {"description":"scattered clouds", "icon":"http://openweathermap.org/img/wn/03d@2x.png"}
+    , {"description":"broken clouds", "icon":"http://openweathermap.org/img/wn/04d@2x.png"}
+    , {"description":"shower rain", "icon":"http://openweathermap.org/img/wn/09d@2x.png"}
+    , {"description":"rain", "icon":"http://openweathermap.org/img/wn/10d@2x.png"}
+    , {"description":"thunderstorm", "icon":"http://openweathermap.org/img/wn/11d@2x.png"}
+    , {"description":"snow", "icon":"http://openweathermap.org/img/wn/13d@2x.png"}
+    , {"description":"mist", "icon":"http://openweathermap.org/img/wn/50d@2x.png"}
+]
+
 var convertKelvin = function(myKelvin) {
     var myFarenheit = Math.round(((myKelvin - 273.15) * 1.8) + 32);
     return myFarenheit;
@@ -51,6 +63,8 @@ var displayDaily = function(myWeather) {
 }
 
 var displayForecast = function(myWeather) {
+    console.log(myWeather);
+
     var h3Element = document.createElement("h3");
     h3Element.textContent = "5-Day Forecast:";
     containerContent.appendChild(h3Element);
@@ -61,6 +75,11 @@ var displayForecast = function(myWeather) {
     containerContent.appendChild(divContainer);
 
     for (index = 0; index < 5; index++) {
+        var myIndex = aryForecastIcons.findIndex( ({description}) => description === myWeather.daily[index].weather[0].description);    
+
+        console.log(myIndex);
+        console.log(myWeather.daily[index].weather[0].description);
+
         // div
         var divElement = document.createElement("div");
         divElement.className = "card"
@@ -78,12 +97,7 @@ var displayForecast = function(myWeather) {
 
         // h6 - Wind Speed
         h6Element = document.createElement("h6");
-        h6Element.textContent = "Wind: " + Math.round(myWeather.daily[index].wind_speed) + " mph";
-        divElement.appendChild(h6Element);
-
-        // h6 - Humidity
-        h6Element = document.createElement("h6");
-        h6Element.textContent = "Humidity: " + myWeather.daily[index].humidity + "%";
+        h6Element.textContent = "Wind: " + Math.round(myWeather.daily[index].wind_speed) + " mph | Humidity: " + myWeather.daily[index].humidity + "% | Description: " + myWeather.daily[index].weather[0].description;
         divElement.appendChild(h6Element);
     }
 }
@@ -99,6 +113,8 @@ var getWeather = function(myCity)
             myResponse.json().then(function(aryWeather) 
             {
                 displayDaily(aryWeather);
+
+                console.log(aryWeather);
 
                 var myLon = aryWeather.coord.lon;
                 var myLat = aryWeather.coord.lat;
