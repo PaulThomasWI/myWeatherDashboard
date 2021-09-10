@@ -38,6 +38,31 @@
     color: white;
   }
 
+  .green {
+    background-color: lime;
+    color: black;
+  }
+
+  .yellow {
+    background-color: yellow;
+    color: black;
+  }
+
+  .red {
+    background-color: red;
+    color: white;
+  }
+
+  .purple {
+    background-color: purple;
+    color: white;
+  }
+
+  .blue {
+    background-color: blue;
+    color: white;
+  }
+
   .large {
     font-size: 72px;
   }

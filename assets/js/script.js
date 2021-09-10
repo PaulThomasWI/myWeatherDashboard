@@ -28,6 +28,11 @@ var aryForecastIcons = [
 ]
 
 var aryCities = [];
+
+var myCUVI = 0;
+var myHUVI = 0;
+
+var myAPIKey = "4aa73af98c97ad68d159a328cfd7328a";
 // end of Global Variables
 
 /*
@@ -116,7 +121,7 @@ var displayDaily = function(myWeather) {
     h4Element.textContent = myTemp + "f";
     divElement.appendChild(h4Element);
 
-    // h6 - Wind Speed | Humidity
+    // h6 - Wind Speed | Humidity | Sunrise | Sunset
     var mySunrise = dayjs.unix(myWeather.sys.sunrise).format("hh:mm A");
     var mySunset  = dayjs.unix(myWeather.sys.sunset).format("hh:mm A");
 
@@ -126,6 +131,42 @@ var displayDaily = function(myWeather) {
         + myWeather.main.humidity + "% | Sunrise: " + mySunrise + " | Sunset: " + mySunset
         + " | Low: " + myLow + " | High: " + myHigh
         ;
+    divElement.appendChild(h6Element);
+
+    if (myCUVI >= 11) {
+        myClass = "blue";
+    } else if (myCUVI >= 8) {
+        myClass = "purple";
+    } else if (myCUVI >= 6) {
+        myClass = "red";
+    } else if (myCUVI >= 3) {
+        myClass = "yellow";
+    } else {
+        myClass = "green";
+    }
+
+    // h6 - Current UV Index and High UV Index
+    h6Element = document.createElement("h6");
+    h6Element.className = myClass;
+    h6Element.textContent = "Current UV Index: " + myCUVI;
+    divElement.appendChild(h6Element);
+
+    if (myHUVI >= 11) {
+        myClass = "blue";
+    } else if (myHUVI >= 8) {
+        myClass = "purple";
+    } else if (myHUVI >= 6) {
+        myClass = "red";
+    } else if (myHUVI >= 3) {
+        myClass = "yellow";
+    } else {
+        myClass = "green";
+    }
+
+    // h6 - Current UV Index and High UV Index
+    h6Element = document.createElement("h6");
+    h6Element.className = myClass;
+    h6Element.textContent = "Highest UV Index (today): " + myHUVI;
     divElement.appendChild(h6Element);
 }
 
@@ -198,7 +239,7 @@ var displayForecast = function(myWeather) {
 */
 var getWeather = function(myCity) 
 {
-    var myAPIURL = "https://api.openweathermap.org/data/2.5/weather?q=" + myCity + "&APPID=4aa73af98c97ad68d159a328cfd7328a";
+    var myAPIURL = "https://api.openweathermap.org/data/2.5/weather?q=" + myCity + "&APPID=" + myAPIKey;
 
     fetch(myAPIURL).then(function(myResponse) 
     {
@@ -207,21 +248,27 @@ var getWeather = function(myCity)
             myResponse.json().then(function(aryWeather) 
             {
                 // Top Weather Box - Right Side
-                displayDaily(aryWeather);
+                //displayDaily(aryWeather);
 
                 var myLon = aryWeather.coord.lon;
                 var myLat = aryWeather.coord.lat;
 
-                myAPIURL = "https://api.openweathermap.org/data/2.5/onecall?lat=" + myLat + "&lon=" + myLon + "&appid=4aa73af98c97ad68d159a328cfd7328a";
+                myAPIURL = "https://api.openweathermap.org/data/2.5/onecall?lat=" + myLat + "&lon=" + myLon + "&appid=" + myAPIKey;
+
+                console.log(myAPIURL);
 
                 fetch(myAPIURL).then(function(myResponse) 
                 {
                     if (myResponse.ok) {
-                        myResponse.json().then(function(aryWeather) 
+                        myResponse.json().then(function(aryForecast) 
                         {
                             // Bottom Weather Boxes
                             // Forecast - Right Side
-                            displayForecast(aryWeather);
+                            myCUVI = aryForecast.current.uvi;
+                            myHUVI = aryForecast.daily[0].uvi;
+
+                            displayDaily(aryWeather);
+                            displayForecast(aryForecast);
                         });
                     } else {
                         alert("Error: Details for city not found.");
