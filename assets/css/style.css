@@ -38,6 +38,10 @@
     color: white;
   }
 
+  .large {
+    font-size: 72px;
+  }
+
   main {
     margin: 20px auto;
     width: 94%;

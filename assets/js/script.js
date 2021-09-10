@@ -1,7 +1,8 @@
-var cityFormElement  = document.querySelector("#city-form");
-var cityInputElement = document.querySelector("#idCity");
-
-var containerContent = document.querySelector("#container");
+var cityFormElement     = document.querySelector("#city-form");
+var cityInputElement    = document.querySelector("#idCity");
+var containerContent    = document.querySelector("#container");
+var containerCities     = document.querySelector("#idCities");
+var citiesButtonElement = document.querySelector("#cityButtons");
 
 var dteToday = dayjs().format("MM/DD/YYYY");
 
@@ -10,19 +11,79 @@ var aryForecastIcons = [
     , {"description":"few clouds", "icon":"http://openweathermap.org/img/wn/02d@2x.png"}
     , {"description":"scattered clouds", "icon":"http://openweathermap.org/img/wn/03d@2x.png"}
     , {"description":"broken clouds", "icon":"http://openweathermap.org/img/wn/04d@2x.png"}
+    , {"description":"overcast clouds", "icon":"http://openweathermap.org/img/wn/04d@2x.png"}    
     , {"description":"shower rain", "icon":"http://openweathermap.org/img/wn/09d@2x.png"}
     , {"description":"rain", "icon":"http://openweathermap.org/img/wn/10d@2x.png"}
+    , {"description":"light rain", "icon":"http://openweathermap.org/img/wn/10d@2x.png"}    
+    , {"description":"moderate rain", "icon":"http://openweathermap.org/img/wn/10d@2x.png"}        
     , {"description":"thunderstorm", "icon":"http://openweathermap.org/img/wn/11d@2x.png"}
+    , {"description":"rain and snow", "icon":"http://openweathermap.org/img/wn/13d@2x.png"}    
     , {"description":"snow", "icon":"http://openweathermap.org/img/wn/13d@2x.png"}
     , {"description":"mist", "icon":"http://openweathermap.org/img/wn/50d@2x.png"}
 ]
 
+var aryCities = [];
+
+/*
+    ----------------------------------------------------------------------
+        The Weather API Returns Temperatures in Kelvin, this function
+        converts them to Farenheit
+    ----------------------------------------------------------------------
+*/
 var convertKelvin = function(myKelvin) {
     var myFarenheit = Math.round(((myKelvin - 273.15) * 1.8) + 32);
     return myFarenheit;
 }
 
+/*
+    ----------------------------------------------------------------------
+        Testing Function to Simulate Cities Being Loaded into 
+        Local Storage
+    ----------------------------------------------------------------------
+*/
+function setCities () {
+    aryCities.push("Neenah", "Hyattsville", "Charlotte", "Burlington Junction", "San Antonio");
+    localStorage.setItem("wdCities", aryCities);
+}
+
+/*
+    ----------------------------------------------------------------------
+        Load Cities from Local Storage when Page Loads
+
+        Local Storage getItem(keyName = wdCities), wd = Weather Dashboard
+    ----------------------------------------------------------------------
+*/
+function loadCities () {
+    var lsCities = localStorage.getItem("wdCities");
+    
+    if (lsCities !== null) {
+        aryCities = lsCities.split(",");
+
+        for (index = 0; index < aryCities.length; index++) {
+            addCity(aryCities[index]);
+        };
+    }
+}
+
+function addCity (myCity) {
+    // add button
+    var btnElement = document.createElement("button");
+    btnElement.className = "btn white";
+    btnElement.id = "idBtnCity"
+    btnElement.setAttribute("data-weatherCity", myCity);
+    btnElement.textContent = myCity;
+    citiesButtonElement.appendChild(btnElement);
+}
+
+/*
+    ----------------------------------------------------------------------
+        Display the Current Weather for the chosen city
+    ----------------------------------------------------------------------
+*/
 var displayDaily = function(myWeather) {
+    // clear any previous city weather and forecast data from right pane
+    containerContent.innerHTML = "";
+
     // row
     var divContainer = document.createElement("div");
     divContainer.className = "flex-row flex-column";
@@ -45,8 +106,8 @@ var displayDaily = function(myWeather) {
     myLow  = convertKelvin(myWeather.main.temp_min);
 
     var h4Element = document.createElement("h4");
-    h4Element.className = "white";    
-    h4Element.textContent = "Current Temp: " + myTemp + " F";
+    h4Element.className = "white large";    
+    h4Element.textContent = myTemp + "f";
     divElement.appendChild(h4Element);
 
     // h6 - Wind Speed | Humidity
@@ -62,9 +123,14 @@ var displayDaily = function(myWeather) {
     divElement.appendChild(h6Element);
 }
 
+/*
+    ----------------------------------------------------------------------
+        Display the Weather Forecast for the chosen city, the Forecast
+        only display the next five days even though the API call returns
+        seven days.
+    ----------------------------------------------------------------------
+*/
 var displayForecast = function(myWeather) {
-    console.log(myWeather);
-
     var h3Element = document.createElement("h3");
     h3Element.textContent = "5-Day Forecast:";
     containerContent.appendChild(h3Element);
@@ -77,31 +143,53 @@ var displayForecast = function(myWeather) {
     for (index = 0; index < 5; index++) {
         var myIndex = aryForecastIcons.findIndex( ({description}) => description === myWeather.daily[index].weather[0].description);    
 
-        console.log(myIndex);
-        console.log(myWeather.daily[index].weather[0].description);
-
         // div
         var divElement = document.createElement("div");
-        divElement.className = "card"
+        divElement.className = "card-header2"
         divContainer.appendChild(divElement);
 
+        // img
+        if (myIndex >= 0) {
+            var imgElement = document.createElement("img");
+            imgElement.src = aryForecastIcons[myIndex].icon;
+            divElement.appendChild(imgElement);
+        }
+
+        // h3 - Date
         h3Element = document.createElement("h3");
+        h3Element.className = "white";
         h3Element.textContent = dayjs(dteToday).add((index + 1), 'd').format("MM/DD/YYYY");
         divElement.appendChild(h3Element);
 
         // h4 - Temperature
         myTemp = convertKelvin(myWeather.daily[index].temp.day);
         var h4Element = document.createElement("h4");
-        h4Element.textContent = "Temp: " + myTemp + " F";
+        h4Element.className = "white large";
+        h4Element.textContent = myTemp + "f";
         divElement.appendChild(h4Element);
 
         // h6 - Wind Speed
         h6Element = document.createElement("h6");
-        h6Element.textContent = "Wind: " + Math.round(myWeather.daily[index].wind_speed) + " mph | Humidity: " + myWeather.daily[index].humidity + "% | Description: " + myWeather.daily[index].weather[0].description;
+        h6Element.className = "white";
+        h6Element.textContent = "Wind: " + Math.round(myWeather.daily[index].wind_speed) + " mph | Humidity: " + myWeather.daily[index].humidity + "%";
+        divElement.appendChild(h6Element);
+
+        // h6 - Description
+        h6Element = document.createElement("h6");
+        h6Element.className = "white";
+        h6Element.textContent = myWeather.daily[index].weather[0].description;
         divElement.appendChild(h6Element);
     }
 }
 
+/*
+    ----------------------------------------------------------------------
+        API Fetch to Open Weather DB
+        The first fetch queries for the city
+        The second fetch sends the longitude and latitude coordinates
+            to the API and returns a seven (7) day forecast.
+    ----------------------------------------------------------------------
+*/
 var getWeather = function(myCity) 
 {
     var myAPIURL = "https://api.openweathermap.org/data/2.5/weather?q=" + myCity + "&APPID=4aa73af98c97ad68d159a328cfd7328a";
@@ -112,9 +200,8 @@ var getWeather = function(myCity)
         {
             myResponse.json().then(function(aryWeather) 
             {
+                // Top Weather Box - Right Side
                 displayDaily(aryWeather);
-
-                console.log(aryWeather);
 
                 var myLon = aryWeather.coord.lon;
                 var myLat = aryWeather.coord.lat;
@@ -126,6 +213,8 @@ var getWeather = function(myCity)
                     if (myResponse.ok) {
                         myResponse.json().then(function(aryWeather) 
                         {
+                            // Bottom Weather Boxes
+                            // Forecast - Right Side
                             displayForecast(aryWeather);
                         });
                     } else {
@@ -141,6 +230,7 @@ var getWeather = function(myCity)
     });
 }
 
+// Get Weather Button Click Handler
 var formSubmitHandler = function(event) {
     event.preventDefault();
     console.log(event);
@@ -151,9 +241,39 @@ var formSubmitHandler = function(event) {
         containerContent.innerHTML = "";
         getWeather(myCity);
         cityInputElement.value = "";
+
+        // Check the city array (which is the list of cities to click)
+        // to see if the searched for city is not in the list.
+        // If it is not in the list, add a button for the city
+        // and save it to local storage.
+        var myIndex = aryCities.find(city => city === myCity);
+        if (myIndex === undefined) {
+            addCity(myCity);
+            aryCities.push(myCity);
+            localStorage.setItem("wdCities", aryCities);
+            
+            if (citiesButtonElement === null) {
+                citiesButtonElement.addEventListener("click", buttonClickHandler);
+            }            
+        }
     } else {
         alert("Please enter a City to get the weather for.");
     }
 }
 
+// Get Weather Button Click Listener
 cityFormElement.addEventListener("submit", formSubmitHandler);
+
+// Get City Button Click Handler
+var buttonClickHandler = function(event) {
+    var myCity = event.target.getAttribute("data-weatherCity");
+    getWeather(myCity);
+}
+
+//setCities();
+loadCities();
+
+// Get City Button Click Listener
+if (citiesButtonElement !== null) {
+    citiesButtonElement.addEventListener("click", buttonClickHandler);
+}
