@@ -1,6 +1,11 @@
+/*
+    ----------------------------------------------------------------------
+        Global Variables
+    ----------------------------------------------------------------------        
+*/
 var cityFormElement     = document.querySelector("#city-form");
 var cityInputElement    = document.querySelector("#idCity");
-var containerContent    = document.querySelector("#container");
+var containerWeather    = document.querySelector("#container");
 var containerCities     = document.querySelector("#idCities");
 var citiesButtonElement = document.querySelector("#cityButtons");
 
@@ -23,6 +28,7 @@ var aryForecastIcons = [
 ]
 
 var aryCities = [];
+// end of Global Variables
 
 /*
     ----------------------------------------------------------------------
@@ -82,12 +88,12 @@ function addCity (myCity) {
 */
 var displayDaily = function(myWeather) {
     // clear any previous city weather and forecast data from right pane
-    containerContent.innerHTML = "";
+    containerWeather.innerHTML = "";
 
     // row
     var divContainer = document.createElement("div");
     divContainer.className = "flex-row flex-column";
-    containerContent.appendChild(divContainer);
+    containerWeather.appendChild(divContainer);
 
     // div
     var divElement = document.createElement("div");
@@ -133,12 +139,12 @@ var displayDaily = function(myWeather) {
 var displayForecast = function(myWeather) {
     var h3Element = document.createElement("h3");
     h3Element.textContent = "5-Day Forecast:";
-    containerContent.appendChild(h3Element);
+    containerWeather.appendChild(h3Element);
     
     // row
     var divContainer = document.createElement("div");
     divContainer.className = "flex-row justify-space-between col-sm-12";
-    containerContent.appendChild(divContainer);
+    containerWeather.appendChild(divContainer);
 
     for (index = 0; index < 5; index++) {
         var myIndex = aryForecastIcons.findIndex( ({description}) => description === myWeather.daily[index].weather[0].description);    
@@ -238,7 +244,7 @@ var formSubmitHandler = function(event) {
     var myCity = cityInputElement.value.trim();
 
     if (myCity) {
-        containerContent.innerHTML = "";
+        containerWeather.innerHTML = "";
         getWeather(myCity);
         cityInputElement.value = "";
 
